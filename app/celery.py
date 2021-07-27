@@ -10,8 +10,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.autodiscover_tasks()
 
-app.conf.beat_schedule = {
-    'adding_new_articles':
-{    'task': 'mainapp.tasks.run_parsers',
-    'schedule': 1000}
-}

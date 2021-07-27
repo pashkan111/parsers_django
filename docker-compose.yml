@@ -12,7 +12,6 @@ services:
 
     postgres_db:
         image: postgres
-        # build: .
         restart: always
         volumes:
             - ./data/db:/var/lib/postgresql/data
@@ -22,13 +21,11 @@ services:
             - POSTGRES_PASSWORD=1234
         ports:
             - 5438:5438
-        # restart: always
         networks: 
             - bitnet
 
     web:
         build: .
-        # command: python manage.py runserver 0.0.0.0:8000
         command: >
             sh -c "python3 manage.py migrate &&
                 python3 manage.py runserver 0.0.0.0:8000"

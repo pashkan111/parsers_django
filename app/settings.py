@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 ALLOWED_HOSTS=['127.0.0.1']
 SECRET_KEY = '^x^^xjbecum5*_755i@z!q#ij-y!9j^9+j5*j2_h0p@_g!fb!2'
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -71,7 +71,6 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': '1234',
-        # 'HOST': '0.0.0.0',
         'HOST': 'postgres_db',
         'PORT': '5432',
     }
@@ -111,14 +110,27 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-#         'LOCATION': 'my_cache_table',
-#     }
-# }
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+CACHES = {
+     'default': {
+         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+         'LOCATION': 'my_cache_table',
+     }
+ }
 CELERY_CACHE_BACKEND = 'default'
+import app.tasks
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'adding_new_articles':
+        {'task': 'mainapp.tasks.run_parsers',
+            'schedule': crontab(minute="*/1"),
+        }
+}
