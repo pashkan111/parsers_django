@@ -1,0 +1,76 @@
+version: '3'
+
+services: 
+    
+    redis:
+        image: redis
+        restart: always
+        ports: 
+            - '6379:6379'
+        networks: 
+            - bitnet
+
+    postgres_db:
+        image: postgres
+        # build: .
+        restart: always
+        volumes:
+            - ./data/db:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=1234
+        ports:
+            - 5438:5438
+        # restart: always
+        networks: 
+            - bitnet
+
+    web:
+        build: .
+        # command: python manage.py runserver 0.0.0.0:8000
+        command: >
+            sh -c "python3 manage.py migrate &&
+                python3 manage.py runserver 0.0.0.0:8000"
+        volumes: 
+            - .:/src
+        depends_on: 
+            - postgres_db
+            - redis
+        ports: 
+            - '8000:8000'
+        networks: 
+            - bitnet
+
+    celery:
+        build:
+            context: .
+        container_name: celery
+        command: celery  -A app worker -l INFO
+        volumes: 
+            - .:/src
+        depends_on: 
+            - web
+            - redis
+        restart: always
+        networks: 
+            - bitnet
+
+    celery-beat:
+        build:
+            context: .
+        container_name: celery_beat
+        command: celery -A app beat -l info
+        volumes: 
+            - .:/src
+        depends_on: 
+            - web
+            - redis
+        restart: always
+        networks: 
+            - bitnet
+
+networks: 
+    bitnet:
+        driver: bridge
+
